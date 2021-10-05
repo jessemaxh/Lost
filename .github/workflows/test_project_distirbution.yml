@@ -2,7 +2,9 @@ name: test project distribution
 #this is for QA auto test build,  more info here: https://docs.testproject.io/tips-and-tricks/extending-testproject-recorder-capabilities-for-dedicated-elements
 
 on:
-  push
+  push:
+    branches:
+      - master
 
 env:
   CI: true
