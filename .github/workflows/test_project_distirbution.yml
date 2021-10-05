@@ -2,63 +2,16 @@ name: test project distribution
 #this is for QA auto test build,  more info here: https://docs.testproject.io/tips-and-tricks/extending-testproject-recorder-capabilities-for-dedicated-elements
 
 on:
-  repository_dispatch:
-    types: [ apk-build ]
+  push
 
 env:
   CI: true
-  keystore_alias: ${{ secrets.ANDROID_ALIAS }}
-  keystore_password: ${{ secrets.APP_KEY_PASSWORD }}
-  keystore_alias_password: ${{ secrets.APP_KEY_STORE_PASSWORD }}
-
-  PROJECT_ID: D5ohkT4g-kCS5nUz-RyHOg
-  APPID: 7b0vYFgpsE6ZQVQrImGaAA
-  PROJECT_TOKEN: OBZaccUfU5K8AetvjSxhrs92G37nxasafXqW1TY19_01
 
 jobs:
   testProjectDistribution:
     name: Test Project Distribution
     runs-on: ubuntu-latest
     steps:
-      - name: Set up JDK 8
-        uses: actions/setup-java@v2
-        with:
-          java-version: '8'
-          distribution: 'adopt'
-          architecture: x64
-
-      - uses: actions/checkout@v2
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
-
-      - id: build_apk
-        uses: ./.github/actions/build_apk_action
-        with:
-          app_signing_key: ${{ secrets.APP_SIGNING_KEY }}
-          flavor: androidDev
-          isDebug: false
-          isAutoTest: true
-
-      - name: distribute to testproject.com
-        run: |
-          apkPath=${{ steps.build_apk.outputs.apk_path }}
-          filename=${apkPath##*/}
-
-          # jq is a JSON process binary,
-          apt-get update
-          apt-get -y install jq
-          # need got upload url from response, like
-          #{
-          #  "url": "https://s3.eu-west-1.amazonaws.com/storage-euw1-temp.testproject.io/U1sQaTEmBEGEYQWx5pz40Q?X-Amz-Expires=600&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAITRD2MKKMDIUNQRA%2F20210107%2Feu-west-1%2Fs3%2Faws4_request&X-Amz-Date=20210107T084237Z&X-Amz-SignedHeaders=host&X-Amz-Signature=cb11bec71d69943e39047f1deb3c22we7986f4beb19294b5t55uz12a78kzq9551",
-          #  "method": {
-          #    "Method": "PUT"
-          #  }
-          #}
-          uploadUrl=`curl -X GET "https://api.testproject.io/v2/projects/$PROJECT_ID/applications/$APPID/file/upload-link" -H "accept: application/json" -H "Authorization: $PROJECT_TOKEN" | jq '.url' | sed 's/"//g'`
-
-          res=`curl -X PUT $uploadUrl --upload-file $apkPath`
-
-          curl -X POST "https://api.testproject.io/v2/projects/$PROJECT_ID/applications/$APPID/file" -H "accept: application/json" -H "Authorization: $PROJECT_TOKEN" -H "Content-Type: application/json" -d "{ \"fileName\": \"$filename\"}"
-
-
+      - run: |
+        a=`which jq`
+        echo "###### $a"
